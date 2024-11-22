@@ -1,4 +1,5 @@
 // /src/components/control_panel.jsx
+
 import React, { useState } from 'react';
 import useStore from '../store';
 
@@ -43,11 +44,15 @@ function ControlPanel() {
     const tValue = parseFloat(inputs[id].t);
 
     if (!Number.isNaN(xValue) && !Number.isNaN(tValue)) {
-      addPoint(id, xValue, tValue);
-      setInputs((prevInputs) => ({
-        ...prevInputs,
-        [id]: { x: '', t: '' },
-      }));
+      const success = addPoint(id, xValue, tValue);
+      if (success) {
+        setInputs((prevInputs) => ({
+          ...prevInputs,
+          [id]: { x: '', t: '' },
+        }));
+      } else {
+        alert('Cannot add point: This would result in motion faster than the speed of light.');
+      }
     } else {
       alert('Please enter valid numerical values for x and t.');
     }
@@ -75,15 +80,11 @@ function ControlPanel() {
           <div>
             Points:
             <div style={{ maxHeight: '100px', overflowY: 'auto', marginTop: '5px' }}>
-              {worldlines[id].positions.map((x, idx) => {
-                const t = worldlines[id].times[idx];
-                const key = `${x}-${t}`;
-                return (
-                  <div key={key}>
-                    ({x.toFixed(2)}, {worldlines[id].times[idx].toFixed(2)})
-                  </div>
-                );
-              })}
+              {worldlines[id].points.map((point) => (
+                <div key={point.id}>
+                  ({point.x.toFixed(2)}, {point.t.toFixed(2)})
+                </div>
+              ))}
             </div>
           </div>
           <div>

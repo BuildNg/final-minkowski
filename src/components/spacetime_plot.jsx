@@ -1,4 +1,5 @@
 // /src/components/spacetime_plot.jsx
+
 import React, { useRef } from 'react';
 import {
   Stage, Layer, Line, Circle, Text,
@@ -32,7 +33,10 @@ function SpacetimePlot() {
     const xData = x / xScale - 10;
     const yData = (height - y) / yScale - 10;
 
-    addPoint(currentWorldline, xData, yData);
+    const success = addPoint(currentWorldline, xData, yData);
+    if (!success) {
+      alert('Cannot add point: This would result in motion faster than the speed of light.');
+    }
   };
 
   // Draw axes, grid lines, and labels
@@ -114,22 +118,34 @@ function SpacetimePlot() {
       const worldline = worldlines[key];
       const points = [];
 
-      for (let i = 0; i < worldline.times.length; i += 1) {
-        const x = dataToCanvasX(worldline.positions[i]);
-        const y = dataToCanvasY(worldline.times[i]);
+      // Define colors for each worldline
+      let color;
+      if (key === '1') {
+        color = 'red';
+      } else if (key === '2') {
+        color = 'green';
+      } else if (key === '3') {
+        color = 'blue';
+      } else {
+        color = 'black'; // Default color for any additional worldlines
+      }
+
+      worldline.points.forEach((point) => {
+        const x = dataToCanvasX(point.x);
+        const y = dataToCanvasY(point.t);
         points.push(x, y);
 
         // Draw points
         elements.push(
           <Circle
-            key={`point-${key}-${i}`}
+            key={point.id}
             x={x}
             y={y}
             radius={3}
-            fill={`rgb(${key * 50}, ${key * 50}, 150)`}
+            fill={color}
           />,
         );
-      }
+      });
 
       // Draw lines
       if (points.length >= 4) {
@@ -137,7 +153,7 @@ function SpacetimePlot() {
           <Line
             key={`line-${key}`}
             points={points}
-            stroke={`rgb(${key * 50}, ${key * 50}, 150)`}
+            stroke={color}
             strokeWidth={2}
           />,
         );
